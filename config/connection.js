@@ -12,8 +12,4 @@ const sequelize = process.env.JAWSDB_URL
       },
     });
 
-console.log(process.env.DB_NAME);
-console.log(process.env.DB_USER);
-console.log(process.env.DB_PW);
-
 module.exports = sequelize;
