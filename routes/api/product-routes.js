@@ -5,39 +5,33 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 
 // get all products
 router.get('/', async (req, res) => {
+  // find all products
+  // be sure to include its associated Category and Tag data
   try {
-    const products = await Product.findAll({
-      include: [
-        { model: Category },
-        { model: Tag, through: ProductTag},
-      ],
-    });
-
-    res.json(products);
+    const productData = await Product.findAll(); // find all product
+    res.status(200).json(productData); // send back that data as a response
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to retrieve '});
+    res.status(500).json(err); // send err status if there's an error
   }
 });
 
 // get one product
 router.get('/:id', async (req, res) => {
+  // find a single product by its `id`
+  // be sure to include its associated Category and Tag data
   try {
-    const product = await Product.findByPk(req.params.id, {
-      include: [
-        { model: Category },
-        {model: Tag, through: ProductTag},
-      ],
+    const productData = await Product.findByPk(req.params.id, {
+      include: [{ model: Category, model: Tag}]
     });
 
-    if (product) {
-      res.json(product);
-    } else { 
-      res.status(404).json({ error: 'product not found' })
+    if (!productData) {
+      res.status(404).json({ message: 'No product found with this id!' });
+      return;
     }
+
+    res.status(200).json(productData);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to retrieve '});
+    res.status(500).json(err);
   }
 });
 
@@ -48,7 +42,8 @@ router.post('/', (req, res) => {
       product_name: "Basketball",
       price: 200.00,
       stock: 3,
-      tagIds: [1, 2, 3, 4]
+      tagIds: [1, 2, 3, 4],
+      category_id: 1
     }
   */
   Product.create(req.body)
@@ -119,15 +114,22 @@ router.put('/:id', (req, res) => {
 });
 
 router.delete('/:id', async (req, res) => {
-  try {
   // delete one product by its `id` value
-  const deleted = await Product.destroy({ where: { id: req.params.id} });
+  try {
+    const productData = await Product.destroy({
+      where: {
+        id: req.params.id
+      }
+    });
 
-  !deleted
-    ? res.status(400).json({ message: 'ID not found' })
-    : res.status(200).json(deleted);
+    if (!productData) {
+      res.status(404).json({ message: 'No product was found with this id!' });
+      return;
+    }
+
+    res.status(200).json(productData);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to delete', error: err });
+    res.status(500).json(err);
   }
 });
 
